@@ -15,7 +15,7 @@
 #include <sstream>
 
 #include <steam/isteamclient.h>
-#define GAME_PTR_OFFSET 11815160
+#define GAME_PTR_OFFSET 0x45
 // class ISteamFriends002;
 
 IVModelRender *g_IVModelRender                     = nullptr;
@@ -59,7 +59,7 @@ int *g_PredictionRandomSeed                        = nullptr;
 IFileSystem *g_IFileSystem                         = nullptr;
 IMDLCache *g_IMDLCache                             = nullptr;
 IToolFrameworkInternal *g_IToolFramework           = nullptr;
-CServerTools *g_IServerTools             = nullptr;
+CServerTools *g_IServerTools                       = nullptr;
 
 template <typename T> T *BruteforceInterface(std::string name, sharedobj::SharedObject &object, int start = 0)
 {
@@ -155,7 +155,7 @@ void CreateInterfaces()
     }
     g_ISteamUser       = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
     g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
-    g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ?") + 3));
+    g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1") + 3));
     logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
     g_IAchievementMgr = g_IEngine->GetAchievementMgr();
     g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
@@ -164,7 +164,7 @@ void CreateInterfaces()
         uintptr_t sig          = gSignatures.GetClientSignature("A3 ? ? ? ? C3 8D 74 26 00 B8 FF FF FF FF 5D A3 ? ? ? ? C3");
         g_PredictionRandomSeed = *reinterpret_cast<int **>(sig + (uintptr_t) 1);
 
-        uintptr_t g_pGameRules_sig = CSignature::GetClientSignature("55 89 E5 53 83 EC 14 8B 5D ? C7 44 24 ? ? ? ? ? 89 1C 24 E8 ? ? ? ? C7 03 ? ? ? ? C7 43 ?");
+        uintptr_t g_pGameRules_sig = CSignature::GetClientSignature("55 89 E5 53 83 EC 14 8B 5D ? C7 44 24 ? ? ? ? ? 89 1C 24 E8 ? ? ? ? C7 03 ? ? ? ? C7 43");
         rg_pGameRules              = *reinterpret_cast<CGameRules ***>(g_pGameRules_sig + GAME_PTR_OFFSET);
     }
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());

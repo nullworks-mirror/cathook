@@ -9,16 +9,16 @@
 class CGameRules
 {
 public:
-    int pad0[12];               // 0    | 48 bytes  | 48
-    int roundmode;              // 48   | 4 bytes   | 52
-    int m_bInWaitingForPlayers; // 52   | 4 bytes   | 56
-    int winning_team;           // 56   | 4 bytes   | 60
-    char pad2[974];             // 60   | 974 bytes | 1034
-    bool isPVEMode;             // 1034 | 1 byte    | 1035
-    char pad3[15];              // 1035 | 15 bytes  | 1050
-    int isUsingSpells;          // 1050 | 4 bytes   | 1054
-    char pad4[790];             // 1054 | 790 bytes | 1844
-    int halloweenScenario;      // 1844 | 4 bytes   | 1848
+    int pad0[17];               // 0    | 68 bytes  | 68
+    int roundmode;              // 68   | 4 bytes   | 72
+    int m_bInWaitingForPlayers; // 72   | 4 bytes   | 76
+    int winning_team;           // 76   | 4 bytes   | 80
+    char pad2[974];             // 100  | 974 bytes | 1054
+    bool isPVEMode;             // 1054 | 1 byte    | 1055
+    char pad3[15];              // 1055 | 15 bytes  | 1070
+    int isUsingSpells;          // 1070 | 4 bytes   | 1074
+    char pad4[790];             // 1074 | 790 bytes | 1864
+    int halloweenScenario;      // 1864 | 4 bytes   | 1868
 
     bool isUsingSpells_fn()
     {
