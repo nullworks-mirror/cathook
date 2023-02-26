@@ -45,10 +45,13 @@ bool CachedEntity::IsVisible()
     PROF_SECTION(CE_IsVisible);
     if (m_bVisCheckComplete)
         return m_bAnyHitboxVisible;
-    auto hitbox   = hitboxes.GetHitbox(std::max(0, (hitboxes.GetNumHitboxes() >> 1) - 1));
-    Vector result = hitbox->center;
+    auto hitbox = hitboxes.GetHitbox(std::max(0, (hitboxes.GetNumHitboxes() >> 1) - 1));
+    Vector result;
     if (!hitbox)
         result = m_vecOrigin();
+    else
+        result = hitbox->center;
+
     // Just check a centered hitbox. This is mostly used for ESP anyway
     if (IsEntityVectorVisible(this, result, true, MASK_SHOT_HULL, nullptr, true))
     {
@@ -110,19 +113,27 @@ void Update()
                 continue;
             CachedEntity &ent = array.try_emplace(i, CachedEntity{ i }).first->second;
             ent.Update();
-            if (ent.InternalEntity() && !ent.InternalEntity()->IsDormant())
+            if (ent.InternalEntity())
             {
-                valid_ents.emplace_back(&ent);
+                // Non-dormant entities that need bone updates
+                if (!ent.InternalEntity()->IsDormant())
+                {
+                    valid_ents.emplace_back(&ent);
+                    if (ent.m_Type() == ENTITY_PLAYER || ent.m_Type() == ENTITY_BUILDING || ent.m_Type() == ENTITY_NPC)
+                    {
+                        if (ent.m_bAlivePlayer()) [[likely]]
+                            ent.hitboxes.UpdateBones();
+                        if (ent.m_Type() == ENTITY_PLAYER)
+                            player_cache.emplace_back(&ent);
+                    }
+                }
+
+                // Even dormant players have player info
                 if (ent.m_Type() == ENTITY_PLAYER)
                 {
                     if (!ent.player_info)
                         ent.player_info = new player_info_s;
                     GetPlayerInfo(ent.m_IDX, ent.player_info);
-                    if (ent.m_bAlivePlayer()) [[likely]]
-                    {
-                        ent.hitboxes.UpdateBones();
-                        player_cache.emplace_back(&ent);
-                    }
                 }
             }
         }
