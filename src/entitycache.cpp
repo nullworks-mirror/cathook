@@ -87,18 +87,23 @@ void Update()
         for (auto &[key, val] : array)
         {
             val.Update();
-            if (val.InternalEntity() && !val.InternalEntity()->IsDormant())
+            if (val.InternalEntity())
             {
-                valid_ents.emplace_back(&val);
-                if (val.m_Type() == ENTITY_PLAYER)
+                // Non-dormant entities that need bone updates
+                if (!val.InternalEntity()->IsDormant())
                 {
-                    GetPlayerInfo(val.m_IDX, val.player_info);
-                    if (val.m_bAlivePlayer()) [[likely]]
-                    {
-                        val.hitboxes.UpdateBones();
-                        player_cache.emplace_back(&val);
-                    }
+                    valid_ents.emplace_back(&val);
+                    if (val.m_Type() == ENTITY_PLAYER || val.m_Type() == ENTITY_BUILDING || val.m_Type() == ENTITY_NPC)
+                        if (val.m_bAlivePlayer()) [[likely]]
+                        {
+                            val.hitboxes.UpdateBones();
+                            if (val.m_Type() == ENTITY_PLAYER)
+                                player_cache.emplace_back(&val);
+                        }
                 }
+
+                if (val.m_Type() == ENTITY_PLAYER)
+                    GetPlayerInfo(val.m_IDX, val.player_info);
             }
         }
         previous_max = max;
@@ -122,9 +127,11 @@ void Update()
                     if (ent.m_Type() == ENTITY_PLAYER || ent.m_Type() == ENTITY_BUILDING || ent.m_Type() == ENTITY_NPC)
                     {
                         if (ent.m_bAlivePlayer()) [[likely]]
+                        {
                             ent.hitboxes.UpdateBones();
-                        if (ent.m_Type() == ENTITY_PLAYER)
-                            player_cache.emplace_back(&ent);
+                            if (ent.m_Type() == ENTITY_PLAYER)
+                                player_cache.emplace_back(&ent);
+                        }
                     }
                 }
 
