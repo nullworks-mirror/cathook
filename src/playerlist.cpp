@@ -160,7 +160,7 @@ bool IsDefault(unsigned steamid)
 
 bool IsDefault(CachedEntity *entity)
 {
-    if (entity && entity->player_info->friendsID)
+    if (entity && entity->player_info && entity->player_info->friendsID)
         return IsDefault(entity->player_info->friendsID);
     return true;
 }
@@ -173,7 +173,7 @@ bool IsFriend(unsigned steamid)
 
 bool IsFriend(CachedEntity *entity)
 {
-    if (entity && entity->player_info->friendsID)
+    if (entity && entity->player_info && entity->player_info->friendsID)
         return IsFriend(entity->player_info->friendsID);
     return false;
 }
@@ -238,7 +238,7 @@ bool ChangeState(unsigned int steamid, k_EState state, bool force)
 
 bool ChangeState(CachedEntity *entity, k_EState state, bool force)
 {
-    if (entity && entity->player_info->friendsID)
+    if (entity && entity->player_info && entity->player_info->friendsID)
         return ChangeState(entity->player_info->friendsID, state, force);
     return false;
 }

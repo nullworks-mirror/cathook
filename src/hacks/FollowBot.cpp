@@ -364,8 +364,9 @@ static void cm()
                     if (!isValidTarget(entity))
                         continue;
                     // No enemy check, since steamid is very specific
-                    if (steamid != entity->player_info->friendsID) // steamid check
-                        continue;
+                    if (entity->player_info)
+                        if (steamid != entity->player_info->friendsID) // steamid check
+                            continue;
                     if (startFollow(entity, isNavBotCM))
                     {
                         navinactivity.update();
@@ -399,8 +400,9 @@ static void cm()
                             continue;
                         if (entity->m_bEnemy())
                             continue;
-                        if (accountid != entity->player_info->friendsID)
-                            continue;
+                        if (entity->player_info)
+                            if (accountid != entity->player_info->friendsID)
+                                continue;
                         if (startFollow(entity, isNavBotCM))
                         {
                             navinactivity.update();
