@@ -1880,7 +1880,7 @@ Vector getShootPos(Vector angle)
 
     // Huntsman
     case CL_CLASS(CTFCompoundBow):
-        vecOffset = Vector(23.5f, -4.0f, -3.0f);
+        vecOffset = Vector(23.5f, 8.0f, -3.0f);
         break;
 
     default:

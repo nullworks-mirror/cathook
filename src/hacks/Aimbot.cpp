@@ -1166,17 +1166,14 @@ bool IsTargetStateGood(CachedEntity *entity)
 
     return false;
 }
-
-// A function to aim at a specific entitiy
-// __attribute__ has to be ontop of the function, since we ned to check for nans
-__attribute__((optimize("-fno-finite-math-only"))) 
 bool Aim(CachedEntity *entity)
 {
     if (*miss_chance > 0 && UniformRandomInt(0, 99) < *miss_chance)
         return true;
 
     // Get angles from eye to target
-    Vector is_it_good = PredictEntity(entity);
+    Vector og_pos;
+    Vector is_it_good = PredictEntity(entity, &og_pos);
     if (!projectileAimbotRequired)
         if (!IsEntityVectorVisible(entity, is_it_good, true, MASK_SHOT_HULL, nullptr, true))
             return false;
@@ -1190,48 +1187,36 @@ bool Aim(CachedEntity *entity)
         if (grav_comp)
         {
             const QAngle &angl = VectorToQAngle(angles);
-            Vector end_targ;
-            if (entity->hitboxes.GetHitbox(cd.hitbox))
-                end_targ = entity->hitboxes.GetHitbox(cd.hitbox)->center;
-            else
-                end_targ = entity->m_vecOrigin();
-            Vector fwd;
-            AngleVectors2(angl, &fwd);
+            Vector end_targ    = og_pos;
+            Vector fwd, right, up;
+            AngleVectors3(angl, &fwd, &right, &up);
+            // I have no clue why this is 200.0f, No where in the SDK explains this.
+            // It appears to work though
+            Vector vel = 0.9f * ((fwd * cur_proj_speed) + (up * 200.0f));
+            fwd.z      = 0.0f;
             fwd.NormalizeInPlace();
-            fwd *= cur_proj_speed;
-            Vector dist_between = (end_targ - orig) / fwd;
-            const float gravity = cur_proj_grav * g_ICvar->FindVar("sv_gravity")->GetFloat() * -1.0f;
-            float z_diff        = (end_targ.z - orig.z);
-            const float sol_1   = ((fwd.z + std::sqrt(fwd.z * fwd.z + 2.0f * gravity * (z_diff))) / (-1.0f * gravity));
-            if (std::isnan(sol_1))
-                dist_between.z = ((fwd.z - std::sqrt(fwd.z * fwd.z + 2.0f * gravity * (z_diff))) / (-1.0f * gravity));
-            else
-                dist_between.z = sol_1;
-            float maxTime = dist_between.Length();
-            if (!std::isnan(maxTime))
+            float alongvel = std::sqrt(vel.x * vel.x + vel.y * vel.y);
+            fwd *= alongvel;
+            const float gravity  = cur_proj_grav * g_ICvar->FindVar("sv_gravity")->GetFloat() * -1.0f;
+            const float maxTime  = 1.2f;
+            const float timeStep = maxTime * 0.01f;
+            Vector curr_pos      = orig;
+            trace_t ptr_trace;
+            Vector last_pos                 = orig;
+            const IClientEntity *rawest_ent = RAW_ENT(entity);
+            for (float t = 0.0f; t < maxTime; t += timeStep, last_pos = curr_pos)
             {
-
-                const float timeStep = maxTime * 0.1f;
-                Vector curr_pos      = orig;
-                trace_t ptr_trace;
-                Vector last_pos                 = orig;
-                const IClientEntity *rawest_ent = RAW_ENT(entity);
-                for (float t = 0.0f; t < maxTime; t += timeStep, last_pos = curr_pos)
-                {
-                    curr_pos.x = orig.x + fwd.x * t;
-                    curr_pos.y = orig.y + fwd.y * t;
-                    curr_pos.z = orig.z + fwd.z * t + 0.5f * gravity * t * t;
-                    if (!didProjectileHit(last_pos, curr_pos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace) || (IClientEntity *) ptr_trace.m_pEnt == rawest_ent)
-                        break;
-                }
-                if (!didProjectileHit(ptr_trace.endpos, end_targ, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace))
-                    return false;
-
-                if (200.0f < curr_pos.DistTo(end_targ))
-                    return false;
+                curr_pos.x = orig.x + fwd.x * t;
+                curr_pos.y = orig.y + fwd.y * t;
+                curr_pos.z = orig.z + vel.z * t + 0.5f * gravity * t * t;
+                if (!didProjectileHit(last_pos, curr_pos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace) || (IClientEntity *) ptr_trace.m_pEnt == rawest_ent)
+                    break;
             }
-            else if (!didProjectileHit(orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true))
+            Vector original = ptr_trace.endpos;
+            if (!didProjectileHit(ptr_trace.endpos, end_targ, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace))
                 return false;
+            if(100.0f < (ptr_trace.endpos - original).Length())
+            return false;    
         }
         else if (!didProjectileHit(orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
             return false;
@@ -1360,7 +1345,7 @@ void DoAutoshoot(CachedEntity *target_entity)
 }
 
 // Grab a vector for a specific ent
-Vector PredictEntity(CachedEntity *entity)
+Vector PredictEntity(CachedEntity *entity, Vector *init_vel)
 {
     // Pull out predicted data
     Vector &result            = cd.aim_position;
@@ -1384,6 +1369,8 @@ Vector PredictEntity(CachedEntity *entity)
 
             // Don't use the intial velocity compensated one in vischecks
             result = tmp_result.second;
+            if (init_vel)
+                *init_vel = tmp_result.first;
         }
         else
         {
