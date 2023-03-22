@@ -1214,7 +1214,7 @@ bool Aim(CachedEntity *entity)
             if (!didProjectileHit(end_targ, ptr_trace.endpos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace))
                 return false;
             Vector ent_check = entity->m_vecOrigin();
-            if (!didProjectileHit(ent_check, ptr_trace.endpos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true))
+            if (!didProjectileHit(last_pos, ent_check, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), false))
                 return false;
         }
         else if (!didProjectileHit(orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
