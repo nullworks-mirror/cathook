@@ -1172,8 +1172,7 @@ bool Aim(CachedEntity *entity)
         return true;
 
     // Get angles from eye to target
-    Vector og_pos;
-    Vector is_it_good = PredictEntity(entity, &og_pos);
+    Vector is_it_good = PredictEntity(entity);
     if (!projectileAimbotRequired)
         if (!IsEntityVectorVisible(entity, is_it_good, true, MASK_SHOT_HULL, nullptr, true))
             return false;
@@ -1187,7 +1186,7 @@ bool Aim(CachedEntity *entity)
         if (grav_comp)
         {
             const QAngle &angl = VectorToQAngle(angles);
-            Vector end_targ    = og_pos;
+            Vector end_targ    = is_it_good;
             Vector fwd, right, up;
             AngleVectors3(angl, &fwd, &right, &up);
             // I have no clue why this is 200.0f, No where in the SDK explains this.
@@ -1198,7 +1197,7 @@ bool Aim(CachedEntity *entity)
             float alongvel = std::sqrt(vel.x * vel.x + vel.y * vel.y);
             fwd *= alongvel;
             const float gravity  = cur_proj_grav * g_ICvar->FindVar("sv_gravity")->GetFloat() * -1.0f;
-            const float maxTime  = 1.2f;
+            const float maxTime  = 1.5f;
             const float timeStep = maxTime * 0.01f;
             Vector curr_pos      = orig;
             trace_t ptr_trace;
@@ -1212,11 +1211,11 @@ bool Aim(CachedEntity *entity)
                 if (!didProjectileHit(last_pos, curr_pos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace) || (IClientEntity *) ptr_trace.m_pEnt == rawest_ent)
                     break;
             }
-            Vector original = ptr_trace.endpos;
-            if (!didProjectileHit(ptr_trace.endpos, end_targ, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace))
+            if (!didProjectileHit(end_targ, ptr_trace.endpos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace))
                 return false;
-            if(100.0f < (ptr_trace.endpos - original).Length())
-            return false;    
+            Vector ent_check = entity->m_vecOrigin();
+            if (!didProjectileHit(ent_check, ptr_trace.endpos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true))
+                return false;
         }
         else if (!didProjectileHit(orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
             return false;
@@ -1345,7 +1344,7 @@ void DoAutoshoot(CachedEntity *target_entity)
 }
 
 // Grab a vector for a specific ent
-Vector PredictEntity(CachedEntity *entity, Vector *init_vel)
+Vector PredictEntity(CachedEntity *entity)
 {
     // Pull out predicted data
     Vector &result            = cd.aim_position;
@@ -1369,8 +1368,6 @@ Vector PredictEntity(CachedEntity *entity, Vector *init_vel)
 
             // Don't use the intial velocity compensated one in vischecks
             result = tmp_result.second;
-            if (init_vel)
-                *init_vel = tmp_result.first;
         }
         else
         {
