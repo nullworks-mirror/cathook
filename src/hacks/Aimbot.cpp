@@ -1197,8 +1197,8 @@ bool Aim(CachedEntity *entity)
             float alongvel = std::sqrt(vel.x * vel.x + vel.y * vel.y);
             fwd *= alongvel;
             const float gravity  = cur_proj_grav * g_ICvar->FindVar("sv_gravity")->GetFloat() * -1.0f;
-            const float maxTime  = 1.5f;
-            const float timeStep = maxTime * 0.01f;
+            const float maxTime  = 2.5f;
+            const float timeStep = 0.01f;
             Vector curr_pos      = orig;
             trace_t ptr_trace;
             Vector last_pos                 = orig;
