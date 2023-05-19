@@ -71,6 +71,8 @@ static InitRoutine minigun_check(
                         continue;
                     // Get the weapon
                     CachedEntity *weapon = ENTITY(HandleToIDX(hWeapons[i]));
+                    if (CE_BAD(weapon))
+                        continue;
                     // if weapon is what we are looking for, hook and move on
                     if (CE_VALID(weapon) && (weapon->m_iClassID() == CL_CLASS(CTFMinigun) || weapon->m_iClassID() == CL_CLASS(CTFFlameThrower)) && !minigun_hook.IsHooked(weapon->InternalEntity()))
                     {
