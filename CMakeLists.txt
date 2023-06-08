@@ -105,7 +105,7 @@ set(BOOST_LIBS_OPTIONAL "" CACHE STRING "Boost libs to be compiled")
 add_subdirectory(external/boost-cmake)
 set(BOOST_ROOT ${CMAKE_BINARY_DIR}/_deps/boost-src)
 find_package(Boost REQUIRED PATHS ${CMAKE_BINARY_DIR}/_deps/boost-src/tools/boost_install/ NO_DEFAULT_PATH)
-include_directories(${CMAKE_BINARY_DIR}/_deps/boost-src/boost)
+include_directories(${CMAKE_BINARY_DIR}/_deps/boost-src)
 
 execute_process(COMMAND
         "${GIT_EXECUTABLE}" log -1 --pretty=\"%h\"
