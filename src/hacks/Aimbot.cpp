@@ -510,6 +510,9 @@ static void CreateMove()
         target_last = nullptr;
         return;
     }
+    // Unless we're using slow aim, we do not want to aim while reloading
+    if (*only_can_shoot && !slow_aim && !CanShoot())
+        return;
 
     doAutoZoom(false);
     if (hacks::tf2::antianticheat::enabled)
