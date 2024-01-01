@@ -28,7 +28,22 @@ std::vector<ConCommand *> &RegisteredCommandsList()
     static std::vector<ConCommand *> list{};
     return list;
 }
+bool is_rocket(int class_id)
+{
+    switch (class_id)
+    {
 
+    case CL_CLASS(CTFRocketLauncher):
+    case CL_CLASS(CTFParticleCannon):
+    case CL_CLASS(CTFRocketLauncher_AirStrike):
+    case CL_CLASS(CTFRocketLauncher_Mortar):
+    case CL_CLASS(CTFRocketLauncher_DirectHit):
+        return true;
+    default:
+        return false;
+    }
+    return false;
+}
 void BeginConVars()
 {
     logging::Info("Begin ConVars");
@@ -661,7 +676,7 @@ bool didProjectileHit(Vector start_point, Vector end_point, CachedEntity *entity
         trace_obj = tracer;
     else
         trace_obj = new trace_t;
-    ray.Init(start_point, end_point, Vector(0, -projectile_size, -projectile_size), Vector(0, projectile_size, projectile_size));
+    ray.Init(start_point, end_point, Vector(-projectile_size, -projectile_size, -projectile_size), Vector(projectile_size, projectile_size, projectile_size));
     g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, trace_obj);
     return (((IClientEntity *) trace_obj->m_pEnt) == RAW_ENT(entity) || (grav_comp ? !trace_obj->DidHit() : false));
 }
@@ -1880,7 +1895,7 @@ Vector getShootPos(Vector angle)
 
     // Huntsman
     case CL_CLASS(CTFCompoundBow):
-        vecOffset = Vector(23.5f, 8.0f, -3.0f);
+        vecOffset = Vector(23.5f, -8.0f, -3.0f);
         break;
 
     default:

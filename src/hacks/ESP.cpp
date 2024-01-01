@@ -76,13 +76,12 @@ static settings::Boolean proj_enemy{ "esp.projectile.enemy-only", "true" };
 static settings::Boolean entity_info{ "esp.debug.entity", "false" };
 static settings::Boolean entity_model{ "esp.debug.model", "false" };
 static settings::Boolean entity_id{ "esp.debug.id", "true" };
-
 // Forward declarations
 class ESPData
 {
 public:
     int string_count{ 0 };
-    boost::unordered_flat_map<std::string, rgba_t> strings{};
+    std::vector<std::pair<std::string, rgba_t>> strings{};
     rgba_t color{ colors::empty };
     bool needs_paint{ false };
     bool has_collide{ false };
@@ -95,8 +94,8 @@ boost::unordered_flat_map<u_int16_t, ESPData> data;
 inline void AddEntityString(CachedEntity *entity, const std::string &string, const rgba_t &color = colors::empty)
 {
     ESPData &entity_data = data[entity->m_IDX];
-    if (entity_data.strings.try_emplace(string, color).second)
-        ++(entity_data.string_count);
+    entity_data.strings.emplace_back(string, color);
+    ++(entity_data.string_count);
     entity_data.needs_paint = true;
 }
 inline bool hitboxUpdate(CachedEntity *ent)
@@ -926,6 +925,8 @@ void ProcessEntityPT()
         if (ent_data.string_count)
             DrawStrings(type, transparent, screen, ent_data, ent);
     }
+    for (auto &[key, esp_data] : data)
+        esp_data.strings.clear();
 }
 static std::string write_str;
 // Used to process entities from CreateMove

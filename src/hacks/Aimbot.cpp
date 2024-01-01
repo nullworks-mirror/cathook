@@ -199,14 +199,14 @@ inline float projectileHitboxSize(int projectile_size)
     case CL_CLASS(CTFPipebombLauncher):
     case CL_CLASS(CTFGrenadeLauncher):
     case CL_CLASS(CTFCannon):
-        return 6.5f;
+        return 4.0f;
     case CL_CLASS(CTFFlareGun):
     case CL_CLASS(CTFFlareGun_Revenge):
     case CL_CLASS(CTFDRGPomson):
-        return 3.0f;
+        return 2.0f;
     case CL_CLASS(CTFSyringeGun):
     case CL_CLASS(CTFCompoundBow):
-        return 2.0f;
+        return 1.0f;
     default:
         return 3.0f;
     }
@@ -1169,6 +1169,15 @@ bool IsTargetStateGood(CachedEntity *entity)
 
     return false;
 }
+
+float secant_x(float in)
+{
+    return 1.0f / (cos(in));
+}
+float csc_x(float in)
+{
+    return 1.0f / (sin(in));
+}
 bool Aim(CachedEntity *entity)
 {
     if (*miss_chance > 0 && UniformRandomInt(0, 99) < *miss_chance)
@@ -1180,47 +1189,52 @@ bool Aim(CachedEntity *entity)
         if (!IsEntityVectorVisible(entity, is_it_good, true, MASK_SHOT_HULL, nullptr, true))
             return false;
 
-    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, is_it_good, LOCAL_E);
+    Vector player_velocity;
+    velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), player_velocity);
+    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye + player_velocity * TICKS_TO_TIME(1), is_it_good, LOCAL_E);
 
     if (projectileAimbotRequired) // unfortunately you have to check this twice, otherwise you'd have to run GetAimAtAngles far too early
     {
-        const Vector &orig   = getShootPos(angles);
         const bool grav_comp = (0.01f < cur_proj_grav);
+        Vector shot_orig     = getShootPos(angles);
         if (grav_comp)
         {
-            const QAngle &angl = VectorToQAngle(angles);
-            Vector end_targ    = is_it_good;
-            Vector fwd, right, up;
-            AngleVectors3(angl, &fwd, &right, &up);
-            // I have no clue why this is 200.0f, No where in the SDK explains this.
-            // It appears to work though
-            Vector vel = 0.9f * ((fwd * cur_proj_speed) + (up * 200.0f));
-            fwd.z      = 0.0f;
-            fwd.NormalizeInPlace();
-            float alongvel = std::sqrt(vel.x * vel.x + vel.y * vel.y);
-            fwd *= alongvel;
-            const float gravity  = cur_proj_grav * g_ICvar->FindVar("sv_gravity")->GetFloat() * -1.0f;
-            const float maxTime  = 2.5f;
-            const float timeStep = 0.01f;
-            Vector curr_pos      = orig;
-            trace_t ptr_trace;
-            Vector last_pos                 = orig;
-            const IClientEntity *rawest_ent = RAW_ENT(entity);
-            for (float t = 0.0f; t < maxTime; t += timeStep, last_pos = curr_pos)
+            float max_vel    = cur_proj_speed;
+            float sv_gravity = g_ICvar->FindVar("sv_gravity")->GetFloat() * cur_proj_grav;
+            float dist       = (cur_proj_speed * cur_proj_speed) / (sv_gravity);
+            if (g_pLocalPlayer->v_Eye.DistTo(is_it_good) > dist)
+                return false;
+            float angles_x = DEG2RAD(angles.x);
+            float angles_y = DEG2RAD(angles.y);
+            float t_x      = ((is_it_good.x - shot_orig.x) * secant_x(angles_x) * secant_x(angles_y)) / cur_proj_speed;
+            float t_y      = ((is_it_good.y - shot_orig.y) * secant_x(angles_x) * csc_x(angles_y)) / cur_proj_speed;
+            float t_z      = -1.0f * (cur_proj_speed * sin(angles_x) + std::sqrt(-2 * sv_gravity * is_it_good.z + 2 * sv_gravity * shot_orig.z + cur_proj_speed * cur_proj_speed * sin(angles_x) * sin(angles_x))) / (cur_proj_grav);
+            if (!t_z)
+                t_z = 9999999999.0f;
+
+            if (t_z < 0.0f)
+                t_z = 9999999999.0f;
+            if (t_x < 0.0f)
+                t_x = 999999999.0f;
+            if (t_y < 0.0f)
+                t_y = 99999999.0f;
+            float t_min           = std::min(t_x, t_y);
+            t_min                 = std::min(t_min, t_z);
+            const float t_min_inc = t_min / 10.0f;
+            Vector second_iter    = shot_orig;
+            for (float t = 0.0f; t < t_min; t += t_min_inc)
             {
-                curr_pos.x = orig.x + fwd.x * t;
-                curr_pos.y = orig.y + fwd.y * t;
-                curr_pos.z = orig.z + vel.z * t + 0.5f * gravity * t * t;
-                if (!didProjectileHit(last_pos, curr_pos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace) || (IClientEntity *) ptr_trace.m_pEnt == rawest_ent)
-                    break;
+                Vector loop_vec = shot_orig;
+                loop_vec.x += (cur_proj_speed * cos(angles_x) * cos(angles_y)) * t;
+                loop_vec.y += (cur_proj_speed * cos(angles_x) * sin(angles_y)) * t;
+                loop_vec.z += (cur_proj_speed * -1.0f * sin(angles_x)) * t - 0.5f * sv_gravity * t * t;
+                if (!didProjectileHit(second_iter, loop_vec, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
+                    return false;
+
+                second_iter = loop_vec;
             }
-            if (!didProjectileHit(end_targ, ptr_trace.endpos, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), true, &ptr_trace))
-                return false;
-            Vector ent_check = entity->m_vecOrigin();
-            if (!didProjectileHit(last_pos, ent_check, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), false))
-                return false;
         }
-        else if (!didProjectileHit(orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
+        else if (!didProjectileHit(shot_orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
             return false;
     }
     if (fov > 0 && cd.fov > fov)
@@ -1512,7 +1526,7 @@ int autoHitbox(CachedEntity *target)
     }
 
     // Rockets and stickies should aim at the foot if the target is on the ground
-    else if (ci == CL_CLASS(CTFPipebombLauncher) || ci == CL_CLASS(CTFRocketLauncher) || ci == CL_CLASS(CTFParticleCannon) || ci == CL_CLASS(CTFRocketLauncher_AirStrike) || ci == CL_CLASS(CTFRocketLauncher_Mortar) || ci == CL_CLASS(CTFRocketLauncher_DirectHit))
+    else if (ci == CL_CLASS(CTFPipebombLauncher) || is_rocket(ci))
     {
         bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
         if (ground)

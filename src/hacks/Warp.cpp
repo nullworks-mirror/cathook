@@ -17,6 +17,7 @@
 #include "Think.hpp"
 #include "Aimbot.hpp"
 #include <Misc.hpp>
+#include <limits>
 namespace hacks::tf2::warp
 {
 static settings::Boolean enabled{ "warp.enabled", "false" };
@@ -47,7 +48,7 @@ static settings::Boolean warp_left{ "warp.on-hit.left", "true" };
 static settings::Boolean warp_right{ "warp.on-hit.right", "true" };
 
 static settings::Boolean debug_seqout{ "debug.warp_seqout", "false" };
-static std::vector<std::tuple<Vector, CachedEntity *>> proj_map;
+static boost::unordered_flat_map<CachedEntity *, Vector> proj_map;
 // Hidden control rvars for communtiy servers
 static settings::Int maxusrcmdprocessticks("warp.maxusrcmdprocessticks", "24");
 
@@ -261,118 +262,169 @@ bool shouldRapidfire()
 
     return buttons_pressed;
 }
+
 void dodgeProj(CachedEntity *proj_ptr)
 {
 
     Vector eav;
-
+    const Vector player_origin = RAW_ENT(LOCAL_E)->GetAbsOrigin();
     velocity::EstimateAbsVelocity(RAW_ENT(proj_ptr), eav);
     // Sometimes EstimateAbsVelocity returns completely BS values (as in 0 for everything on say a rocket)
     // The ent could also be an in-place sticky which we don't care about - we want to catch it while it's in the air
     if (1 < eav.Length())
     {
-        Vector proj_pos   = RAW_ENT(proj_ptr)->GetAbsOrigin();
-        Vector player_pos = RAW_ENT(LOCAL_E)->GetAbsOrigin();
-
-        float displacement      = proj_pos.DistToSqr(player_pos);
-        float displacement_temp = displacement - 1;
-        float min_displacement  = displacement_temp - 1;
-        float multipler         = 0.01f;
+        Vector proj_pos         = RAW_ENT(proj_ptr)->GetAbsOrigin();
+        float multipler         = 2.0f;
         bool add_grav           = false;
+        float high_time         = 10;
+        float low_time          = 0;
+        float high_displacement = std::numeric_limits<float>::max();
         float curr_grav         = g_ICvar->FindVar("sv_gravity")->GetFloat();
-        if (proj_ptr->m_Type() == ENTITY_PROJECTILE)
+        if (proj_ptr->m_Type() == ENTITY_PROJECTILE && ProjGravMult(proj_ptr->m_iClassID(), eav.Length()) > 0.001f)
             add_grav = true;
         // Couldn't find a cleaner way to get the projectiles gravity based on just having a pointer to the projectile itself
         curr_grav = curr_grav * ProjGravMult(proj_ptr->m_iClassID(), eav.Length());
         // Optimization loop. Just checks if the projectile can possibly hit within ~141HU
-        while (displacement_temp < displacement)
+
+        if (!add_grav)
+        {
+            float c_1 = ((float) (player_origin - proj_pos).Dot(eav)) / ((float) eav.Dot(eav));
+            // logging::Info("C_1 is %f for the entity id %d, the velocity is %f. The distance is %f", c_1, proj_ptr->m_Type(), eav.Length(), (eav * c_1 + proj_pos).DistTo(player_origin));
+            if (c_1 > 0)
+            {
+                float dist = (eav * c_1 + proj_pos).DistToSqr(player_origin);
+                if (dist > 40000)
+                    proj_map.insert({ proj_ptr, Vector(0, 0, 0) });
+                else
+                    proj_map.insert({ proj_ptr, eav });
+            }
+            return;
+        }
+        float last_displacement = high_displacement;
+        int sign                = 1;
+        int repeats             = 0;
+        while (high_time > 0.01f)
         {
 
-            Vector temp_pos = (eav * multipler) + proj_pos;
-            if (add_grav)
-                temp_pos.z = temp_pos.z - 0.5 * curr_grav * multipler * multipler;
-            displacement_temp = temp_pos.DistToSqr(player_pos);
-            if (displacement_temp < min_displacement)
-                min_displacement = displacement_temp;
+            Vector temp_pos = (eav * high_time) + proj_pos;
+            temp_pos.z      = temp_pos.z - 0.5 * curr_grav * high_time * high_time;
+            float curr_disp = temp_pos.DistToSqr(player_origin);
+            if (curr_disp < high_displacement)
+            {
+                repeats           = 0;
+                high_displacement = curr_disp;
+                high_time -= multipler * sign;
+                if (multipler > 0.05f)
+                    multipler /= 2.0f;
+            }
+            else if (last_displacement < curr_disp)
+            {
+                ++repeats;
+                sign *= -1;
+            }
             else
-                break;
-
-            multipler += 0.01f;
+            {
+                repeats = 0;
+            }
+            if (repeats > 2)
+            {
+                // logging::Info(" entity id %d, the velocity is %f. The distance is %f", proj_ptr->m_Type(), eav.Length(), curr_disp);
+                proj_map.insert({ proj_ptr, Vector(0, 0, 0) });
+                return;
+            }
+            last_displacement = curr_disp;
+            if (high_displacement < 40000)
+            {
+                // logging::Info(" entity id %d, the velocity is %f. The distance is %f", proj_ptr->m_Type(), eav.Length(), curr_disp);
+                proj_map.insert({ proj_ptr, eav });
+                return;
+            }
+            else
+            {
+                // logging::Info(" entity id %d, the velocity is %f. The distance is %f", proj_ptr->m_Type(), eav.Length(), curr_disp);
+                proj_map.insert({ proj_ptr, Vector(0, 0, 0) });
+                return;
+            }
         }
-        if (min_displacement < 20000)
-            proj_map.emplace_back((std::make_tuple(eav, proj_ptr)));
-        else
-            proj_map.emplace_back((std::make_tuple(Vector{ 0, 0, 0 }, proj_ptr)));
     }
+}
+float hitbox_size_proj(int class_id)
+{
+    switch (class_id)
+    {
+    case CL_CLASS(CTFProjectile_Rocket):
+        return 4.0f;
+    case CL_CLASS(CTFGrenadePipebombProjectile):
+        return 4.0f;
+    case CL_CLASS(CTFProjectile_Flare):
+        return 3.0f;
+    case CL_CLASS(CTFProjectile_EnergyBall):
+        return 8.0f;
+    case CL_CLASS(CTFProjectile_GrapplingHook):
+    case CL_CLASS(CTFProjectile_HealingBolt):
+    case CL_CLASS(CTFProjectile_Arrow):
+        return 1.0f;
+    case CL_CLASS(CTFProjectile_SentryRocket):
+        return 2.0f;
+    case CL_CLASS(CTFProjectile_Throwable):
+        return 4.0f;
+    }
+    return 1.0f;
 }
 static void dodgeProj_cm()
 {
     if (!LOCAL_E->m_bAlivePlayer() || proj_map.empty() || !dodge_projectile)
         return;
-    Vector player_pos  = RAW_ENT(LOCAL_E)->GetAbsOrigin();
-    const int max_size = proj_map.size();
-    for (int i = 0; i < max_size; ++i)
+    Vector player_pos = RAW_ENT(LOCAL_E)->GetAbsOrigin();
+    for (const auto &[proj_ptr, proj_vec] : proj_map)
     {
-        auto curr_tuple   = proj_map[i];
-        Vector key        = std::get<0>(curr_tuple);
-        CachedEntity *val = std::get<1>(curr_tuple);
-        if (key.Length() < 0.1f)
+        if (proj_vec.Length() < 0.1f)
         {
-            if (CE_GOOD(val))
+            if (CE_GOOD(proj_ptr))
                 continue;
             else
-                proj_map.erase((proj_map.begin() + i));
+                proj_map.erase(proj_ptr);
             continue;
         }
-        if (CE_GOOD(val))
+        if (CE_GOOD(proj_ptr))
         {
             // Since we are sending this warp next tick we need to compensate for fast moving projectiles
             // 2 Ticks in advance is a fairly safe interval
-            Vector velocity_comp = key * 2 * TICK_INTERVAL;
-            velocity_comp.z -= 2 * TICK_INTERVAL * g_ICvar->FindVar("sv_gravity")->GetFloat() * ProjGravMult(val->m_iClassID(), key.Length());
-
-            Vector proj_next_tik = RAW_ENT(val)->GetAbsOrigin() + velocity_comp;
-            float diff           = proj_next_tik.DistToSqr(player_pos);
+            float c_1   = ((float) (g_pLocalPlayer->v_Origin - RAW_ENT(proj_ptr)->GetAbsOrigin()).Dot(proj_vec)) / ((float) proj_vec.Dot(proj_vec));
+            float ticks = TIME_TO_TICKS(c_1);
+            if (ticks > 30)
+                continue;
+            float max_speed   = CE_FLOAT(LOCAL_E, netvar.m_flMaxspeed);
+            Vector dist       = RAW_ENT(proj_ptr)->GetAbsOrigin();
+            float proj_hitbox = hitbox_size_proj(proj_ptr->m_iClassID());
             // Warp sooner for fast moving projectiles.
-            if (diff < (15000 * (key.Length() / 1000)))
+            trace_t trace;
+            Ray_t ray;
+            ray.Init(dist, player_pos, Vector(-proj_hitbox, -proj_hitbox, -proj_hitbox), Vector(proj_hitbox, proj_hitbox, proj_hitbox));
+            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, NULL, &trace);
+            if (((IClientEntity *) trace.m_pEnt) != RAW_ENT(LOCAL_E) && trace.endpos.DistToSqr(player_pos) < 10000 && (ProjGravMult(proj_ptr->m_iClassID(), proj_vec.Length()) < 0.001f || proj_ptr->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile)))
             {
-                trace_t trace;
-                Ray_t ray;
-                ray.Init(proj_next_tik, player_pos, Vector(0, -8, -8), Vector(0, 8, 8));
-                g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
-                if (trace.DidHit())
-                {
 
-                    // We need to determine wether the projectile is coming in from the left or right of us so we don't warp into the projectile.
-                    Vector result = GetAimAtAngles(g_pLocalPlayer->v_Eye, RAW_ENT(val)->GetAbsOrigin(), LOCAL_E) - g_pLocalPlayer->v_OrigViewangles;
+                ray.Init(trace.endpos, player_pos, Vector(0, 0, 0), Vector(0, 0, 0));
+                g_ITrace->TraceRay(ray, MASK_SHOT_HULL, NULL, &trace);
+            }
+            if (((IClientEntity *) trace.m_pEnt) == RAW_ENT(LOCAL_E) || trace.DidHit() || trace.endpos.DistToSqr(player_pos) < 10)
+            {
+                // logging::Info("ENTERED");
+                //  We need to determine wether the projectile is coming in from the left or right of us so we don't warp into the projectile.
+                Vector result = GetAimAtAngles(g_pLocalPlayer->v_Eye, RAW_ENT(proj_ptr)->GetAbsOrigin(), LOCAL_E) - g_pLocalPlayer->v_OrigViewangles;
 
-                    if (0 <= result.y)
-                        yaw_amount = -90.0f;
-                    else
-                        yaw_amount = 90.0f;
-                    if ((IClientEntity *) trace.m_pEnt == RAW_ENT(LOCAL_E))
-                    {
-                        was_hurt   = true;
-                        warp_dodge = true;
-                        proj_map.erase((proj_map.begin() + i));
-                    }
-                } // It didn't hit anything but it has been proven to be very close to us. Dodge. (This is for the huntsman+pills)
+                if (0 <= result.y)
+                    yaw_amount = -90.0f;
                 else
-                {
-                    was_hurt      = true;
-                    warp_dodge    = true;
-                    Vector result = GetAimAtAngles(g_pLocalPlayer->v_Eye, RAW_ENT(val)->GetAbsOrigin(), LOCAL_E) - g_pLocalPlayer->v_OrigViewangles;
-                    if (0 <= result.y)
-                        yaw_amount = -90.0f;
-                    else
-                        yaw_amount = 90.0f;
-
-                    proj_map.erase((proj_map.begin() + i));
-                }
+                    yaw_amount = 90.0f;
+                was_hurt   = true;
+                warp_dodge = true;
+                proj_map.erase(proj_ptr);
             }
         }
         else
-            proj_map.erase((proj_map.begin() + i));
+            proj_map.erase(proj_ptr);
     }
 }
 // Should we warp?
@@ -720,7 +772,7 @@ static void CreateMove()
     warpLogic();
     if ((bool) hacks::tf2::warp::dodge_projectile && CE_GOOD(g_pLocalPlayer->entity))
         for (auto const &ent : entity_cache::valid_ents)
-            if (ent->m_Type() == ENTITY_PROJECTILE && ent->m_bEnemy() && std::find_if(proj_map.begin(), proj_map.end(), [=](const auto &item) { return std::get<1>(item) == ent; }) == proj_map.end())
+            if (ent->m_Type() == ENTITY_PROJECTILE && ent->m_bEnemy() && proj_map.find(ent) == proj_map.end())
                 dodgeProj(ent);
     // Either in rapidfire, or the tick just after. Either way we need to force bSendPackets in some way.
     bool should_rapidfire = shouldRapidfire();
@@ -1223,7 +1275,7 @@ static InitRoutine init(
         EC::Register(EC::CreateMove, CreateMove, "warp_createmove", EC::very_late);
         EC::Register(EC::CreateMoveWarp, CreateMove, "warp_createmovew", EC::very_late);
         EC::Register(EC::CreateMove_NoEnginePred, CreateMovePrePredict, "warp_prepredict");
-        EC::Register(EC::CreateMove, dodgeProj_cm, "warp_dodgeproj", EC::very_early);
+        EC::Register(EC::CreateMove, dodgeProj_cm, "warp_dodgeproj", EC::average);
         EC::Register(EC::CreateMoveEarly, CreateMoveEarly, "warp_createmove_early", EC::very_early);
         g_IEventManager2->AddListener(&listener, "player_hurt", false);
         EC::Register(
