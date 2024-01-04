@@ -1192,8 +1192,15 @@ bool Aim(CachedEntity *entity)
     Vector start = g_pLocalPlayer->v_Eye + player_velocity * TICKS_TO_TIME(1);
 
     if (!projectileAimbotRequired)
-        if (!didProjectileHit(start, is_it_good, entity, 0, false, nullptr))
+    {
+        trace_t tracer;
+        Ray_t init_ray;
+        init_ray.Init(start, is_it_good);
+        trace::filter_teammates.SetSelf(RAW_ENT(LOCAL_E));
+        g_ITrace->TraceRay(init_ray, MASK_SHOT_HULL, &trace::filter_teammates, &tracer);
+        if ((IClientEntity *) tracer.m_pEnt != RAW_ENT(entity))
             return false;
+    }
 
     Vector angles = GetAimAtAngles(start, is_it_good, LOCAL_E);
 

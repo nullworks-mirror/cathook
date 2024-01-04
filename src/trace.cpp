@@ -279,9 +279,45 @@ void trace::FilterPenetration::Reset()
 {
     m_pIgnoreFirst = 0;
 }
+/* Teammate filter */
+trace::FilterNoTeammates::FilterNoTeammates()
+{
+    m_pSelf = nullptr;
+}
+
+trace::FilterNoTeammates::~FilterNoTeammates(){};
+
+void trace::FilterNoTeammates::SetSelf(IClientEntity *self)
+{
+    if (self == nullptr)
+    {
+        logging::Info("nullptr in FilterNoPlayer::SetSelf");
+        return;
+    }
+    m_pSelf = self;
+}
+
+bool trace::FilterNoTeammates::ShouldHitEntity(IHandleEntity *handle, int mask)
+{
+    IClientEntity *entity;
+    ClientClass *clazz;
+
+    if (!handle)
+        return false;
+    entity = (IClientEntity *) handle;
+    if (ENTITY(entity->entindex())->m_iTeam() == ENTITY(m_pSelf->entindex())->m_iTeam())
+        return false;
+    return true;
+}
+
+TraceType_t trace::FilterNoTeammates::GetTraceType() const
+{
+    return TRACE_EVERYTHING;
+}
 
 trace::FilterDefault trace::filter_default{};
 trace::FilterNoPlayer trace::filter_no_player{};
 trace::FilterNavigation trace::filter_navigation{};
 trace::FilterNoEntity trace::filter_no_entity{};
 trace::FilterPenetration trace::filter_penetration{};
+trace::FilterNoTeammates trace::filter_teammates{};

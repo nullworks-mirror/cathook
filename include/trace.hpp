@@ -41,6 +41,19 @@ public:
     void SetSelf(IClientEntity *self);
     virtual TraceType_t GetTraceType() const;
 };
+
+class FilterNoTeammates : public ITraceFilter
+{
+public:
+    IClientEntity *m_pSelf;
+
+public:
+    virtual ~FilterNoTeammates();
+    FilterNoTeammates();
+    virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
+    void SetSelf(IClientEntity *self);
+    virtual TraceType_t GetTraceType() const;
+};
 class FilterNavigation : public ITraceFilter
 {
 
@@ -84,4 +97,5 @@ extern FilterNoPlayer filter_no_player;
 extern FilterNavigation filter_navigation;
 extern FilterNoEntity filter_no_entity;
 extern FilterPenetration filter_penetration;
+extern FilterNoTeammates filter_teammates;
 } // namespace trace
