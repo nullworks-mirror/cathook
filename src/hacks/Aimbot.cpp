@@ -1185,13 +1185,17 @@ bool Aim(CachedEntity *entity)
 
     // Get angles from eye to target
     Vector is_it_good = PredictEntity(entity);
-    if (!projectileAimbotRequired)
-        if (!IsEntityVectorVisible(entity, is_it_good, true, MASK_SHOT_HULL, nullptr, true))
-            return false;
 
     Vector player_velocity;
     velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), player_velocity);
-    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye + player_velocity * TICKS_TO_TIME(1), is_it_good, LOCAL_E);
+
+    Vector start = g_pLocalPlayer->v_Eye + player_velocity * TICKS_TO_TIME(1);
+
+    if (!projectileAimbotRequired)
+        if (!didProjectileHit(start, is_it_good, entity, 0, false, nullptr))
+            return false;
+
+    Vector angles = GetAimAtAngles(start, is_it_good, LOCAL_E);
 
     if (projectileAimbotRequired) // unfortunately you have to check this twice, otherwise you'd have to run GetAimAtAngles far too early
     {
@@ -1199,7 +1203,6 @@ bool Aim(CachedEntity *entity)
         Vector shot_orig     = getShootPos(angles);
         if (grav_comp)
         {
-            float max_vel    = cur_proj_speed;
             float sv_gravity = g_ICvar->FindVar("sv_gravity")->GetFloat() * cur_proj_grav;
             float dist       = (cur_proj_speed * cur_proj_speed) / (sv_gravity);
             if (g_pLocalPlayer->v_Eye.DistTo(is_it_good) > dist)
@@ -1208,31 +1211,27 @@ bool Aim(CachedEntity *entity)
             float angles_y = DEG2RAD(angles.y);
             float t_x      = ((is_it_good.x - shot_orig.x) * secant_x(angles_x) * secant_x(angles_y)) / cur_proj_speed;
             float t_y      = ((is_it_good.y - shot_orig.y) * secant_x(angles_x) * csc_x(angles_y)) / cur_proj_speed;
-            float t_z      = -1.0f * (cur_proj_speed * sin(angles_x) + std::sqrt(-2 * sv_gravity * is_it_good.z + 2 * sv_gravity * shot_orig.z + cur_proj_speed * cur_proj_speed * sin(angles_x) * sin(angles_x))) / (cur_proj_grav);
-            if (!t_z)
-                t_z = 9999999999.0f;
-
-            if (t_z < 0.0f)
-                t_z = 9999999999.0f;
             if (t_x < 0.0f)
                 t_x = 999999999.0f;
             if (t_y < 0.0f)
                 t_y = 99999999.0f;
             float t_min           = std::min(t_x, t_y);
-            t_min                 = std::min(t_min, t_z);
-            const float t_min_inc = t_min / 10.0f;
+            const float t_min_inc = t_min / 100.0f;
             Vector second_iter    = shot_orig;
             for (float t = 0.0f; t < t_min; t += t_min_inc)
             {
                 Vector loop_vec = shot_orig;
                 loop_vec.x += (cur_proj_speed * cos(angles_x) * cos(angles_y)) * t;
                 loop_vec.y += (cur_proj_speed * cos(angles_x) * sin(angles_y)) * t;
-                loop_vec.z += (cur_proj_speed * -1.0f * sin(angles_x)) * t - 0.5f * sv_gravity * t * t;
+                loop_vec.z += (cur_proj_speed * -1.0f * sin(angles_y)) * t - 0.5f * sv_gravity * t * t;
                 if (!didProjectileHit(second_iter, loop_vec, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
-                    return false;
+                    break; // trace along path of projectile
 
                 second_iter = loop_vec;
             }
+            Vector good_est = entity->hitboxes.GetHitbox(cd.hitbox)->center;
+            if (!didProjectileHit(second_iter, entity->hitboxes.GetHitbox(cd.hitbox)->center, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), false)) // It hit the ground. Make sure that it can atleast have a direct sightline to the entity
+                return false;
         }
         else if (!didProjectileHit(shot_orig, is_it_good, entity, projectileHitboxSize(LOCAL_W->m_iClassID()), grav_comp))
             return false;

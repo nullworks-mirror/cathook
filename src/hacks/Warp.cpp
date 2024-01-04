@@ -402,13 +402,7 @@ static void dodgeProj_cm()
             Ray_t ray;
             ray.Init(dist, player_pos, Vector(-proj_hitbox, -proj_hitbox, -proj_hitbox), Vector(proj_hitbox, proj_hitbox, proj_hitbox));
             g_ITrace->TraceRay(ray, MASK_SHOT_HULL, NULL, &trace);
-            if (((IClientEntity *) trace.m_pEnt) != RAW_ENT(LOCAL_E) && trace.endpos.DistToSqr(player_pos) < 10000 && (ProjGravMult(proj_ptr->m_iClassID(), proj_vec.Length()) < 0.001f || proj_ptr->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile)))
-            {
-
-                ray.Init(trace.endpos, player_pos, Vector(0, 0, 0), Vector(0, 0, 0));
-                g_ITrace->TraceRay(ray, MASK_SHOT_HULL, NULL, &trace);
-            }
-            if (((IClientEntity *) trace.m_pEnt) == RAW_ENT(LOCAL_E) || trace.DidHit() || trace.endpos.DistToSqr(player_pos) < 10)
+            if (((IClientEntity *) trace.m_pEnt) == RAW_ENT(LOCAL_E) || trace.DidHit() || trace.endpos.DistToSqr(player_pos) < 1600)
             {
                 // logging::Info("ENTERED");
                 //  We need to determine wether the projectile is coming in from the left or right of us so we don't warp into the projectile.
