@@ -757,14 +757,14 @@ bool ShouldAim()
 AimbotTarget_t RetrieveBestTarget(bool aimkey_state)
 {
     // If we have a previously chosen target, target lock is on, and the aimkey
-    // is allowed, then attemt to keep the previous target
+    // is allowed, then attempt to keep the previous target
 
     if (target_lock && target_last.valid && aimkey_state)
     {
         AimbotTarget_t target = GetTarget(target_last.ent);
         if (shouldBacktrack(target_last.ent))
         {
-            auto good_ticks_tmp = hacks::tf2::backtrack::getGoodTicks(target_last.ent);
+            auto good_ticks_tmp = hacks::tf2::backtrack::getGoodTicks(target.ent);
             if (good_ticks_tmp)
             {
                 auto good_ticks = *good_ticks_tmp;
@@ -778,10 +778,11 @@ AimbotTarget_t RetrieveBestTarget(bool aimkey_state)
                     if (!validateTickFOV(bt_tick))
                         continue;
                     hacks::tf2::backtrack::MoveToTick(bt_tick);
+                    target = GetTarget(target.ent); // get target for the tick
                     if (target.valid)
                         return target;
                     // Restore if bad target
-                    hacks::tf2::backtrack::RestoreEntity(target_last.ent->m_IDX);
+                    hacks::tf2::backtrack::RestoreEntity(target.ent->m_IDX);
                 }
             }
 
