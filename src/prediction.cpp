@@ -319,7 +319,7 @@ void Prediction_PaintTraverse()
 
         for (auto const &ent : entity_cache::player_cache)
         {
-            
+
             if (CE_BAD(ent) || !ent->m_bAlivePlayer())
                 continue;
 
@@ -504,11 +504,10 @@ Vector EnginePrediction(CachedEntity *entity, float time, Vector *vecVelocity)
 }
 std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravity, float entgmod, float proj_startvelocity)
 {
-    Vector origin = ent->m_vecOrigin();
+    Vector origin = RAW_ENT(ent)->GetAbsOrigin();
     Vector velocity;
     velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
-    Vector hitbox;
-    GetHitbox(ent, hb, hitbox);
+    Vector hitbox        = ent->hitboxes.GetHitbox(hb)->center;
     Vector hitbox_offset = hitbox - origin;
 
     if (!sv_gravity)
@@ -561,7 +560,7 @@ std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb,
     // Compensate for ping
     besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
     bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravity);
-    // S = at^2/2 ; t = sqrt(2S/a)*/
+    //  S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result            = bestpos + hitbox_offset;
     Vector result_initialvel = result;
     result_initialvel.z -= proj_startvelocity * besttime;
@@ -732,9 +731,9 @@ static InitRoutine init(
                 // Don't run if we don't use it
                 if (!hacks::shared::aimbot::engine_projpred && !debug_pp_draw)
                     return;
-                for (auto const &ent: entity_cache::player_cache)
+                for (auto const &ent : entity_cache::player_cache)
                 {
-                    
+
                     auto &buffer = previous_positions.at(ent->m_IDX - 1);
 
                     if (CE_BAD(LOCAL_E) || CE_BAD(ent) || !ent->m_bAlivePlayer())

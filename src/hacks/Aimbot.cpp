@@ -187,14 +187,14 @@ inline float projectileHitboxSize(int projectile_size)
     case CL_CLASS(CTFPipebombLauncher):
     case CL_CLASS(CTFGrenadeLauncher):
     case CL_CLASS(CTFCannon):
-        return 6.5f;
+        return 4.0f;
     case CL_CLASS(CTFFlareGun):
     case CL_CLASS(CTFFlareGun_Revenge):
     case CL_CLASS(CTFDRGPomson):
-        return 3.0f;
+        return 2.0f;
     case CL_CLASS(CTFSyringeGun):
     case CL_CLASS(CTFCompoundBow):
-        return 2.0f;
+        return 1.0f;
     default:
         return 3.0f;
     }
@@ -1220,6 +1220,16 @@ AimbotTarget_t GetTarget(CachedEntity *entity)
     }
     return t;
 }
+
+float secant_x(float in)
+{
+    return 1.0f / (cos(in));
+}
+float csc_x(float in)
+{
+    return 1.0f / (sin(in));
+}
+
 bool Aim(AimbotTarget_t target)
 {
     if (*miss_chance > 0 && UniformRandomInt(0, 99) < *miss_chance)
@@ -1514,7 +1524,7 @@ int autoHitbox(CachedEntity *target)
     }
 
     // Rockets and stickies should aim at the foot if the target is on the ground
-    else if (ci == CL_CLASS(CTFPipebombLauncher) || ci == CL_CLASS(CTFRocketLauncher) || ci == CL_CLASS(CTFParticleCannon) || ci == CL_CLASS(CTFRocketLauncher_AirStrike) || ci == CL_CLASS(CTFRocketLauncher_Mortar) || ci == CL_CLASS(CTFRocketLauncher_DirectHit))
+    else if (ci == CL_CLASS(CTFPipebombLauncher) || is_rocket(ci))
     {
         bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
         if (ground)
