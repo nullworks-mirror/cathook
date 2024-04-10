@@ -55,11 +55,12 @@ void BeginConVars()
             cfg_autoexec_textmode << "// Put your custom cathook settings in this "
                                      "file\n// This script will be executed EACH TIME "
                                      "YOU INJECT TEXTMODE CATHOOK\n"
-                                     "\n"
+                                     "sv_cheats 1\n"
                                      "engine_no_focus_sleep 0\n"
                                      "hud_fastswitch 1\n"
                                      "tf_medigun_autoheal 1\n"
-                                     "fps_max 67\n"
+                                     "cat_fixvac\n"
+                                     "fps_max 30\n"
                                      "cat_ipc_connect";
         }
     }

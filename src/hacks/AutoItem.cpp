@@ -478,8 +478,8 @@ static InitRoutine init(
         int day   = aTime->tm_mday;
         int month = aTime->tm_mon + 1; // Month is 0 - 11, add 1 to get a jan-dec 1-12 concept
 
-        // We only want to Use the christmas noisemaker around christmas time, let's use 12th of december+ til 12th of january
-        if ((month == 12 && day >= 12) || (month == 1 && day <= 12))
+        // We only want to Use the Christmas noisemaker around Christmas time, let's use the 1st of December till 12th of January
+        if ((month == 12 && day >= 1) || (month == 1 && day <= 12))
             noisemaker_id = 673;
 
         /* haha operator[] go brrrrrr */

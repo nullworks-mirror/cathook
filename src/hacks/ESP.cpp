@@ -98,16 +98,6 @@ inline void AddEntityString(CachedEntity *entity, const std::string &string, con
     ++(entity_data.string_count);
     entity_data.needs_paint = true;
 }
-inline bool hitboxUpdate(CachedEntity *ent)
-{
-
-    auto hit = ent->hitboxes.GetHitbox(0);
-    if (!hit)
-        return false;
-    Vector hbm, hbx;
-    if (!draw::WorldToScreen(hit->min, hbm) || !draw::WorldToScreen(hit->max, hbx))
-        return false;
-}
 // Sets an entitys esp color
 void SetEntityColor(CachedEntity *entity, const rgba_t &color)
 {
@@ -377,7 +367,6 @@ static void cm()
                 // Get an entity from the loop tick and process it
 
                 ProcessEntity(ent);
-                hitboxUpdate(ent);
                 ESPData &ent_dat = data.try_emplace(ent->m_IDX, ESPData{}).first->second;
 
                 if (ent_dat.needs_paint)
@@ -406,7 +395,6 @@ static void cm()
                 if (player)
                 {
                     ProcessEntity(ent_index);
-                    hitboxUpdate(ent_index);
                 }
                 else if (entity_tick)
                     ProcessEntity(ent_index);
