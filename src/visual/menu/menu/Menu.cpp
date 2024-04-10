@@ -79,11 +79,11 @@ namespace resource::font
 {
 // FIXME dynamic font change..
 #if ENABLE_IMGUI_DRAWING
-fonts::font base{ paths::getDataPath("/menu/Verdana.ttf"), 12 };
-fonts::font bold{ paths::getDataPath("/menu/VerdanaBold.ttf"), 11 };
+fonts::font base{ paths::getDataPath("/fonts/Verdana.ttf"), 12 };
+fonts::font bold{ paths::getDataPath("/fonts/VerdanaBold.ttf"), 11 };
 #else
-fonts::font base{ paths::getDataPath("/menu/Verdana.ttf"), 10 };
-fonts::font bold{ paths::getDataPath("/menu/VerdanaBold.ttf"), 9 };
+fonts::font base{ paths::getDataPath("/fonts/Verdana.ttf"), 10 };
+fonts::font bold{ paths::getDataPath("/fonts/VerdanaBold.ttf"), 9 };
 #endif
 } // namespace resource::font
 

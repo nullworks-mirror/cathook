@@ -362,7 +362,7 @@ void StoreClientData()
     data.textmode     = ENABLE_TEXTMODE;
     if (g_ISteamUser)
     {
-        strncpy(data.name, GetNamestealName(g_ISteamUser->GetSteamID()).c_str(), sizeof(data.name));
+        strncpy(data.name, hooked_methods::methods::GetFriendPersonaName(g_ISteamFriends, g_ISteamUser->GetSteamID()), sizeof(data.name));
     }
 }
 

@@ -101,8 +101,13 @@ void DrawEntity(int x, int y, CachedEntity *ent)
     rgba_t clr;
     float healthp = 0.0f;
 
+    if(CE_VALID(ent))
+    {
+
         if (ent->m_Type() == ENTITY_PLAYER)
         {
+            if (!ent->m_bAlivePlayer())
+            return;
             if (hide_invis && IsPlayerInvisible(ent))
                 return;
             const int &clazz = CE_INT(ent, netvar.iClass);
@@ -197,7 +202,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 tx_items[1].draw(x + wtr.first + sz, y + wtr.second + sz, sz2, sz2, colors::white);
             }
         }
-    
+    }
 }
 
 void Draw()
@@ -237,6 +242,8 @@ void Draw()
     std::vector<CachedEntity *> sentries;
     for (auto const &ent : entity_cache::valid_ents)
     {
+        if (CE_INVALID(ent))
+            continue;
         if (ent->m_iTeam() == 0)
             continue;
         if (!ent->m_bAlivePlayer())
