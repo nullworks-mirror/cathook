@@ -1217,7 +1217,8 @@ AimbotTarget_t GetTarget(CachedEntity *entity)
         }
         if (fov > 0 && t.fov > fov)
             t.valid = false;
-    return false;
+    }
+    return t;
 }
 
 float secant_x(float in)
