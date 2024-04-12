@@ -8,6 +8,8 @@ fix skyboxchanger (not working and crash)
 
 add rev distance to cathook (optional)
 
+fix hitboxupdate in ESP (crash) i had delete it
+
 need regenerate nav files
 
 update ClassIDs
