@@ -1,10 +1,11 @@
-/*#pragma once
+#pragma once
 
-#include <array>
-#include <stdint.h>
+// #include <array>
+// #include <stdint.h>
 
 namespace hacks::tf2::NavBot
 {
+/*
 bool init(bool first_cm);
 namespace task
 {
@@ -69,6 +70,6 @@ struct bot_class_config
     float min;
     float preferred;
     float max;
-};
+};*/
+std::pair<CachedEntity *, float> getNearestPlayerDistance();
 } // namespace hacks::tf2::NavBot
-*/

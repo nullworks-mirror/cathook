@@ -19,6 +19,7 @@
 #include "FollowBot.hpp"
 #include "Warp.hpp"
 #include "AntiCheatBypass.hpp"
+#include "NavBot.hpp"
 namespace hacks::shared::aimbot
 {
 static settings::Boolean normal_enable{ "aimbot.enable", "false" };
@@ -60,6 +61,7 @@ static settings::Boolean auto_spin_up{ "aimbot.auto.spin-up", "0" };
 static settings::Boolean minigun_tapfire{ "aimbot.auto.tapfire", "false" };
 static settings::Boolean auto_zoom{ "aimbot.auto.zoom", "0" };
 static settings::Boolean auto_unzoom{ "aimbot.auto.unzoom", "0" };
+static settings::Int zoom_distance{ "aimbot.zoom.distance", "1250" }; // that's default zoom distance
 
 static settings::Boolean backtrackAimbot{ "aimbot.backtrack", "0" };
 static settings::Boolean backtrackLastTickOnly("aimbot.backtrack.only-last-tick", "true");
@@ -429,6 +431,7 @@ bool validateTickFOV(tf2::backtrack::BacktrackData &tick)
 void doAutoZoom(bool target_found)
 {
     bool isIdle = target_found ? false : hacks::shared::followbot::isIdle();
+    auto nearest = hacks::tf2::NavBot::getNearestPlayerDistance();
 
     // Keep track of our zoom time
     static Timer zoomTime{};
@@ -443,14 +446,14 @@ void doAutoZoom(bool target_found)
         return;
     }
 
-    if (auto_zoom && g_pLocalPlayer->holding_sniper_rifle && (target_found || isIdle))
+    if (auto_zoom && g_pLocalPlayer->holding_sniper_rifle && (target_found || isIdle || nearest.second < *zoom_distance))
     {
         if (target_found)
             zoomTime.update();
         if (not g_pLocalPlayer->bZoomed)
             current_user_cmd->buttons |= IN_ATTACK2;
     }
-    else if (!target_found)
+    else if (!target_found && nearest.second >= *zoom_distance)
     {
         // Auto-Unzoom
         if (auto_unzoom)

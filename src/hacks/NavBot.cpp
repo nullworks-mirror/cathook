@@ -255,7 +255,7 @@ void refreshSniperSpots()
                 sniper_spots.emplace_back(hiding_spot.m_pos);
 }
 
-static std::pair<CachedEntity *, float> getNearestPlayerDistance()
+std::pair<CachedEntity *, float> getNearestPlayerDistance()
 {
     float distance         = FLT_MAX;
     CachedEntity *best_ent = nullptr;

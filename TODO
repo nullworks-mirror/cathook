@@ -1,13 +1,15 @@
 update CGameRules and fix navbot
 
-fix bot fail during path after respawn in navparser
-
 fix crashes (i hope BenCat07 will fix it)
 
 fix EventLogging (crash)
 
 fix skyboxchanger (not working and crash)
 
-add zoom and rev distance to cathook (optional)
+add rev distance to cathook (optional)
 
-fix hitbox update in ESP (crash) i had delete it
+fix hitboxupdate in ESP (crash) i had delete it
+
+need regenerate nav files
+
+update ClassIDs
