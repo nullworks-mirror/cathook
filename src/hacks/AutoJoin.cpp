@@ -37,7 +37,6 @@ bool UnassignedClass()
     return g_pLocalPlayer->clazz != *autojoin_class;
 }
 
-static Timer autoteam_timer{};
 static Timer startqueue_timer{};
 #if not ENABLE_VISUALS
 Timer queue_time{};
@@ -101,6 +100,7 @@ void updateSearch()
                 tfmm::startQueue();
             }
     }
+    
     startqueue_timer.test_and_set(5000);
 #if not ENABLE_VISUALS
     if (queue_time.test_and_set(1200000))
@@ -111,7 +111,8 @@ void updateSearch()
 }
 static void update()
 {
-    if (autoteam_timer.test_and_set(5000))
+    static Timer autoteam_timer{};
+    if (autoteam_timer.test_and_set(750))
     {
         if (autojoin_team and UnassignedTeam())
         {
