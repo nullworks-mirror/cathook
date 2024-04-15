@@ -27,6 +27,7 @@ static settings::Int radar_y{ "radar.y", "100" };
 static settings::Boolean use_icons{ "radar.use-icons", "true" };
 static settings::Boolean show_teammates{ "radar.show.teammates", "true" };
 static settings::Boolean show_teambuildings{ "radar.show.team.buildings", "true" };
+static settings::Boolean show_enemybuildings{ "radar.show.enemy.buildings", "true" };
 static settings::Boolean show_healthpacks{ "radar.show.health", "true" };
 static settings::Boolean show_ammopacks{ "radar.show.ammo", "true" };
 static settings::Boolean hide_invis{ "radar.hide-invis", "false" };
@@ -249,6 +250,8 @@ void Draw()
         if (!ent->m_bAlivePlayer())
             continue;
         if (ent->m_IDX == g_IEngine->GetLocalPlayer())
+            continue;
+        if (!show_enemybuildings && ent->m_Type() == ENTITY_BUILDING && ent->m_bEnemy())
             continue;
         if (!show_teammates && ent->m_Type() == ENTITY_PLAYER && !ent->m_bEnemy())
             continue;
