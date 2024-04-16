@@ -47,17 +47,6 @@ bool is_rocket(int class_id)
 void BeginConVars()
 {
     logging::Info("Begin ConVars");
-
-    if (!std::ifstream("tf/cfg/blacklist.cfg"))
-    {
-        std::ofstream cfg_blacklist("tf/cfg/blacklist.cfg", std::ios::out | std::ios::trunc);
-        if (cfg_blacklist.good())
-        {
-            cfg_blacklist << "// Blacklisted people\n"
-                             "cat_pl_add_id 1522451783 RAGE"; //qtTF2 is pedophile everyone knows it
-        }
-    }
-
     if (!std::ifstream("tf/cfg/cat_autoexec_textmode.cfg"))
     {
         std::ofstream cfg_autoexec_textmode("tf/cfg/cat_autoexec_textmode.cfg", std::ios::out | std::ios::trunc);

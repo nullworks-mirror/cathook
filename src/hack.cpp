@@ -381,7 +381,6 @@ free(logname);*/
     logging::Info("Initializer stack done");
 #if ENABLE_TEXTMODE
     hack::command_stack().push("exec cat_autoexec_textmode");
-    hack::command_stack().push("exec blacklist");
 #else
     hack::command_stack().push("exec cat_autoexec");
 #endif
